@@ -129,18 +129,20 @@ class CyberHomeScreen extends StatelessWidget {
   }
 }
 
-// 1. شاشة شرائح eSIM
 class EsimScreen extends StatelessWidget {
   const EsimScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF161E2E), title: const Text('شرائح eSIM')),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF161E2E),
+        title: const Text('شرائح eSIM'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          _buildPackageCard('بقة أمريكا - 10 جيجابايت', '15.00 USD', Colors.cyan),
+          _buildPackageCard('باقة أمريكا - 10 جيجابايت', '15.00 USD', Colors.cyan),
           _buildPackageCard('باقة أوروبا - 20 جيجابايت', '25.00 USD', Colors.cyan),
           _buildPackageCard('باقة دولية مفتوحة', '45.00 USD', Colors.cyan),
         ],
@@ -163,7 +165,6 @@ class EsimScreen extends StatelessWidget {
   }
 }
 
-// 2. شاشة VPN
 class VpnScreen extends StatefulWidget {
   const VpnScreen({Key? key}) : super(key: key);
 
@@ -177,7 +178,10 @@ class _VpnScreenState extends State<VpnScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF161E2E), title: const Text('اتصال VPN السريع')),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF161E2E),
+        title: const Text('اتصال VPN السريع'),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -220,14 +224,16 @@ class _VpnScreenState extends State<VpnScreen> {
   }
 }
 
-// 3. شاشة الأرقام الوهمية
 class FakeNumbersScreen extends StatelessWidget {
   const FakeNumbersScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF161E2E), title: const Text('الأرقام الوهمية')),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF161E2E),
+        title: const Text('الأرقام الوهمية'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -255,11 +261,46 @@ class FakeNumbersScreen extends StatelessWidget {
   }
 }
 
-// 4. شاشة الدعم الفني
 class SupportScreen extends StatelessWidget {
   const SupportScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF161E2E), title: const Text('الد
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF161E2E),
+        title: const Text('الدعم الفني والخدمة'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.headset_mic, size: 80, color: Colors.orangeAccent),
+            const SizedBox(height: 24),
+            const Text(
+              'كيف يمكننا مساعدتك اليوم؟',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'فريق الدعم متاح على مدار الساعة طوال أيام الأسبوع لمساعدتك في أي استفسار أو مشكلة تقنية.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orangeAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              ),
+              icon: const Icon(Icons.chat, color: Colors.black),
+              label: const Text('مراسلة الدعم الفني', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
