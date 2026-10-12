@@ -37,7 +37,7 @@ class CyberHomeScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Center(
               child: Text(
-                'رصيد: $50.00',
+                'رصيد: 50.00 USD',
                 style: const TextStyle(
                   color: Color(0xFF00FFCC),
                   fontWeight: FontWeight.bold,
@@ -100,23 +100,3 @@ class CyberHomeScreen extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {},
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: color),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
