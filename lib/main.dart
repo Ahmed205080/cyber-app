@@ -97,7 +97,18 @@ class CyberHomeScreen extends StatelessWidget {
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ServiceDetailScreen(
+                title: title,
+                icon: icon,
+                color: color,
+              ),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -113,6 +124,59 @@ class CyberHomeScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class ServiceDetailScreen extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  const ServiceDetailScreen({
+    Key? key,
+    required this.title,
+    required this.icon,
+    required this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF161E2E),
+        title: Text(title),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 80, color: color),
+              const SizedBox(height: 24),
+              Text(
+                'قسم $title',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'جاري تجهيز محتوى وطبيعة هذه الخدمة...',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
