@@ -32,13 +32,13 @@ class CyberHomeScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF161E2E),
         title: const Text('الخدمات الإلكترونية'),
         centerTitle: true,
-        actions: [
+        actions: const [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: Center(
               child: Text(
                 'رصيد: 50.00 USD',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF00FFCC),
                   fontWeight: FontWeight.bold,
                 ),
@@ -49,40 +49,34 @@ class CyberHomeScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 15,
           children: [
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                children: [
-                  _buildServiceCard(
-                    context,
-                    title: 'شرائح eSIM',
-                    icon: Icons.sim_card,
-                    color: Colors.cyan,
-                  ),
-                  _buildServiceCard(
-                    context,
-                    title: 'اتصال VPN',
-                    icon: Icons.vpn_lock,
-                    color: Colors.purpleAccent,
-                  ),
-                  _buildServiceCard(
-                    context,
-                    title: 'أرقام وهمية',
-                    icon: Icons.phone_android,
-                    color: Colors.greenAccent,
-                  ),
-                  _buildServiceCard(
-                    context,
-                    title: 'الدعم الفني',
-                    icon: Icons.headset_mic,
-                    color: Colors.orangeAccent,
-                  ),
-                ],
-              ),
+            _buildServiceCard(
+              context,
+              title: 'شرائح eSIM',
+              icon: Icons.sim_card,
+              color: Colors.cyan,
+            ),
+            _buildServiceCard(
+              context,
+              title: 'اتصال VPN',
+              icon: Icons.vpn_lock,
+              color: Colors.purpleAccent,
+            ),
+            _buildServiceCard(
+              context,
+              title: 'أرقام وهمية',
+              icon: Icons.phone_android,
+              color: Colors.greenAccent,
+            ),
+            _buildServiceCard(
+              context,
+              title: 'الدعم الفني',
+              icon: Icons.headset_mic,
+              color: Colors.orangeAccent,
             ),
           ],
         ),
@@ -90,8 +84,12 @@ class CyberHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildServiceCard(BuildContext context,
-      {required String title, required IconData icon, required Color color}) {
+  Widget _buildServiceCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF161E2E),
@@ -100,3 +98,23 @@ class CyberHomeScreen extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {},
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 48, color: color),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
