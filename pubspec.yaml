@@ -1,5 +1,5 @@
 name: cyber_app
-description: "A professional mobile application for eSIM, VPN, and Virtual Numbers."
+description: "A professional mobile application for eSIM, VPN, and Virtual numbers"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -12,6 +12,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   http: ^1.2.0
   webview_flutter: ^4.2.2
+  device_info_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:
