@@ -28,18 +28,27 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('CYBER'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('CYBER'),
+        centerTitle: true,
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServerListScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ServerListScreen()),
+              ),
               child: const Text('قائمة السيرفرات'),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PaymentScreen()),
+              ),
               child: const Text('شاشة الدفع'),
             ),
           ],
