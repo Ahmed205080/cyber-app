@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkDeviceEsimSupport();
   }
 
+  // دالة الأصوات والاهتزازات التفاعلية الأساسية
   void _playClickSound() {
     SystemSound.play(SystemSoundType.click);
     HapticFeedback.lightImpact();
@@ -105,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // نافذة شحن الرصيد عبر Binance Pay
+  // نافذة شحن الرصيد عبر Binance Pay مع الأصوات والاهتزازات
   void _showBinancePayDialog() {
     _playClickSound();
     final TextEditingController amountController = TextEditingController(text: "10");
