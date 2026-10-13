@@ -1,8 +1,8 @@
-name: Build Android App
+name: CyberApp Build & Release
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up Java Development Kit
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -22,26 +22,17 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.0'
           channel: 'stable'
-          cache: true
+          flutter-version: '3.19.0'
 
-      - name: Re-generate Android Project Files
-        run: flutter create --platforms=android .
-
-      - name: Fix Android Gradle Plugin Version
-        run: |
-          sed -i 's/8.1.0/8.1.1/g' android/build.gradle || true
-          sed -i 's/8.1.0/8.1.1/g' android/settings.gradle || true
-
-      - name: Install dependencies
+      - name: Get Dependencies
         run: flutter pub get
 
-      - name: Build APK Release
-        run: flutter build apk --release
+      - name: Build Split APKs for All Architectures
+        run: flutter build apk --release --split-per-abi
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v3
         with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: Cyber-APKs
+          path: build/app/outputs/flutter-apk/*.apk
