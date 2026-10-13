@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // حزمة الأصوات والاهتزازات التفاعلية
+import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 void main() {
@@ -45,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkDeviceEsimSupport();
   }
 
-  // دالة لتشغيل صوت وصدمة تفاعلية عند الضغط
   void _playClickSound() {
     SystemSound.play(SystemSoundType.click);
     HapticFeedback.lightImpact();
@@ -104,6 +103,98 @@ class _HomeScreenState extends State<HomeScreen> {
         isScanning = false;
       });
     }
+  }
+
+  // نافذة شحن الرصيد عبر Binance Pay
+  void _showBinancePayDialog() {
+    _playClickSound();
+    final TextEditingController amountController = TextEditingController(text: "10");
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131B2E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.account_balance_wallet, color: Color(0xFFF3BA2F)),
+                  SizedBox(width: 8),
+                  Text(
+                    'إعادة الشحن عبر Binance Pay',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  labelText: 'المبلغ بالدولار (\$)',
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white24),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Color(0xFF00F2FE)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _playClickSound();
+                    double added = double.tryParse(amountController.text) ?? 0.0;
+                    if (added > 0) {
+                      setState(() {
+                        balance += added;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('تم الدفع بنجاح عبر Binance Pay! تمت إضافة \$${added.toStringAsFixed(2)}'),
+                          backgroundColor: const Color(0xFF34D399),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF3BA2F),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('إتمام الدفع الآن (Binance Pay)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -169,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: _playClickSound,
+                    onPressed: _showBinancePayDialog,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00F2FE),
                       foregroundColor: Colors.black,
@@ -261,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
 
-            // كروت الخدمات الأربعة (مُزودة بصوت تفاعلي وألوان زاهية)
+            // كروت الخدمات الأربعة
             Row(
               children: [
                 Expanded(
@@ -367,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
 
-            // قسم الـ VPN السفلي (مزود بصوت واستجابة لمسية)
+            // قسم الـ VPN السفلي
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
