@@ -29,6 +29,11 @@ jobs:
       - name: Re-generate Android Project Files
         run: flutter create --platforms=android .
 
+      - name: Fix Android Gradle Plugin Version
+        run: |
+          sed -i 's/8.1.0/8.1.1/g' android/build.gradle || true
+          sed -i 's/8.1.0/8.1.1/g' android/settings.gradle || true
+
       - name: Install dependencies
         run: flutter pub get
 
