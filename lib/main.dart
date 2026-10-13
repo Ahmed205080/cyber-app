@@ -1,97 +1,68 @@
-import 'package:flutter/material.dart';
-import 'screens/payment_screen.dart';
-import 'screens/server_list_screen.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:http/http.dart' as http;
 
-void main() {
-  runApp(const CyberApp());
-}
+class BinancePayService {
+  final String apiKey = "YOUR_API_KEY";
+  final String secretKey = "YOUR_SECRET_KEY";
+  final String baseUrl = "https://bapi.binance.com";
 
-class CyberApp extends StatelessWidget {
-  const CyberApp({Key? key}) : super(key: key);
+  Future<String?> createOrder({
+    required String merchantTradeNo,
+    required double totalFee,
+    required String currency,
+  }) async {
+    try {
+      final endpoint = "/binancepay/openapi/v2/order";
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final nonce = "123456";
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Cyber VPN',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-        primaryColor: Colors.cyanAccent,
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
+      final bodyMap = {
+        "env": {"terminalType": "WEB"},
+        "merchantTradeNo": merchantTradeNo,
+        "totalFee": totalFee,
+        "currency": currency,
+        "orderExpireTime": DateTime.now().add(const Duration(minutes: 30)).millisecondsSinceEpoch,
+        "goodsDetails": [
+          {
+            "goodsType": "01",
+            "goodsCategory": "D",
+            "referenceGoodsId": "cyber_service_01",
+            "goodsName": "Cyber Digital Service",
+          }
+        ]
+      };
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+      final payload = jsonEncode(bodyMap);
+      final stringToSign = "$timestamp\n$nonce\n$payload\n";
+      
+      final keyBytes = utf8.encode(secretKey);
+      final messageBytes = utf8.encode(stringToSign);
+      final hmac = Hmac(sha512, keyBytes);
+      final digest = hmac.convert(messageBytes);
+      final signature = digest.toString().toUpperCase();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cyber VPN', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.shield_rounded, size: 90, color: Colors.cyanAccent),
-            const SizedBox(height: 20),
-            const Text(
-              'حمايتك الرقمية مُؤمنة بالكامل',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            const SizedBox(height: 40),
-            
-            // زر قائمة السيرفرات
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E293B),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  side: const BorderSide(color: Colors.cyanAccent, width: 1),
-                ),
-                icon: const Icon(Icons.dns, color: Colors.cyanAccent),
-                label: const Text('قائمة السيرفرات المتاحة', style: TextStyle(color: Colors.white, fontSize: 16)),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ServerListScreen()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
+      final response = await http.post(
+        Uri.parse("$baseUrl$endpoint"),
+        headers: {
+          "Content-Type": "application/json",
+          "BinancePay-Timestamp": timestamp,
+          "BinancePay-Nonce": nonce,
+          "BinancePay-Certificate-SN": apiKey,
+          "BinancePay-Signature": signature,
+        },
+        body: payload,
+      );
 
-            // زر ترقية البريميوم (VIP)
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber.shade700,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                icon: const Icon(Icons.star, color: Colors.black),
-                label: const Text('ترقية للحساب البريميوم (VIP)', style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PaymentScreen()),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data["status"] == "SUCCESS") {
+          return data["data"]["checkoutUrl"];
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 }
