@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // حزمة الأصوات والاهتزازات التفاعلية
 import 'package:device_info_plus/device_info_plus.dart';
 
 void main() {
@@ -32,8 +33,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double balance = 50.00;
   bool isScanning = false;
-  String deviceName = "جاري التحقق...";
-  bool isEsimSupported = true;
+  String deviceName = "جاري التحقق من الجهاز...";
+  bool isEsimSupported = false;
+  String statusMessage = "جاري فحص توافق شرائح eSIM...";
 
   final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
@@ -43,37 +45,59 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkDeviceEsimSupport();
   }
 
+  // دالة لتشغيل صوت وصدمة تفاعلية عند الضغط
+  void _playClickSound() {
+    SystemSound.play(SystemSoundType.click);
+    HapticFeedback.lightImpact();
+  }
+
   Future<void> _checkDeviceEsimSupport() async {
+    _playClickSound();
     setState(() {
       isScanning = true;
+      statusMessage = "جاري فحص توافق شرائح eSIM...";
     });
 
     try {
-      // محاكاة بسيطة لضمان ظهور حركة التحميل بسلاسة عند الضغط على الزر
-      await Future.delayed(const Duration(milliseconds: 600));
+      await Future.delayed(const Duration(milliseconds: 900));
 
       if (Platform.isAndroid) {
         AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
+        String model = androidInfo.model.toLowerCase();
+
+        bool isUnsupportedModel = model.contains("a175") || 
+                                  model.contains("a17") || 
+                                  model.contains("a15") || 
+                                  model.contains("a14") || 
+                                  model.contains("a13") || 
+                                  model.contains("a12");
+
         setState(() {
           deviceName = "${androidInfo.brand} ${androidInfo.model}";
-          isEsimSupported = androidInfo.version.sdkInt >= 28;
+          if (isUnsupportedModel) {
+            isEsimSupported = false;
+            statusMessage = "عذراً، جهازك لا يدعم تقنية الشرائح المدمجة (eSIM)";
+          } else {
+            isEsimSupported = androidInfo.version.sdkInt >= 29;
+            statusMessage = isEsimSupported 
+                ? "وجاهز للتفعيل الفوري (eSIM) جهازك يدعم تقنية الشرائح المدمجة" 
+                : "عذراً، نظام جهازك لا يدعم تقنية الشرائح المدمجة (eSIM)";
+          }
         });
       } else if (Platform.isIOS) {
         IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
         setState(() {
           deviceName = iosInfo.name ?? iosInfo.model;
           isEsimSupported = true;
-        });
-      } else {
-        setState(() {
-          deviceName = "Device Supported";
-          isEsimSupported = true;
+          statusMessage = "وجاهز للتفعيل الفوري (eSIM) جهازك يدعم تقنية الشرائح المدمجة";
         });
       }
     } catch (e) {
       debugPrint("خطأ أثناء الفحص: $e");
       setState(() {
         deviceName = "samsung SM-A175F";
+        isEsimSupported = false;
+        statusMessage = "عذراً، جهازك لا يدعم تقنية الشرائح المدمجة (eSIM)";
       });
     } finally {
       setState(() {
@@ -90,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {},
+          onPressed: _playClickSound,
         ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -106,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Color(0xFF1E293B),
               child: Icon(Icons.person, color: Colors.white70),
             ),
-            onPressed: () {},
+            onPressed: _playClickSound,
           ),
         ],
       ),
@@ -145,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _playClickSound,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00F2FE),
                       foregroundColor: Colors.black,
@@ -159,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
 
-            // بطاقة فحص الجهاز (بمربع الأيقونة المُصغر والزر الشغال تماماً)
+            // بطاقة فحص الجهاز
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -186,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
                       ),
                     ],
@@ -194,13 +218,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: const [
-                      Text(
-                        'وجاهز للتفعيل الفوري (eSIM) جهازك يدعم تقنية الشرائح المدمجة',
-                        style: TextStyle(color: Colors.grey, fontSize: 11),
+                    children: [
+                      Flexible(
+                        child: Text(
+                          statusMessage,
+                          style: TextStyle(
+                            color: isEsimSupported ? Colors.grey : Colors.redAccent,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.right,
+                        ),
                       ),
-                      SizedBox(width: 6),
-                      Icon(Icons.check_box, color: Colors.green, size: 16),
+                      const SizedBox(width: 6),
+                      Icon(
+                        isEsimSupported ? Icons.check_box : Icons.cancel,
+                        color: isEsimSupported ? Colors.green : Colors.redAccent,
+                        size: 16,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -227,47 +261,53 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
 
-            // الخدمات الأربعة
+            // كروت الخدمات الأربعة (مُزودة بصوت تفاعلي وألوان زاهية)
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    height: 110,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131B2E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: const [
-                        Icon(Icons.phone_in_talk, color: Colors.white70, size: 28),
-                        SizedBox(height: 12),
-                        Text('أرقام افتراضية', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                      ],
+                  child: GestureDetector(
+                    onTap: _playClickSound,
+                    child: Container(
+                      height: 110,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131B2E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: const [
+                          Icon(Icons.phone_in_talk, color: Color(0xFF38BDF8), size: 28),
+                          SizedBox(height: 12),
+                          Text('أرقام افتراضية', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Container(
-                    height: 110,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131B2E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: const [
-                        Icon(Icons.sim_card, color: Colors.white70, size: 28),
-                        SizedBox(height: 12),
-                        Text('شرائح الـ eSIM', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                      ],
+                  child: GestureDetector(
+                    onTap: _playClickSound,
+                    child: Container(
+                      height: 110,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131B2E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: const [
+                          Icon(Icons.sim_card, color: Color(0xFF818CF8), size: 28),
+                          SizedBox(height: 12),
+                          Text('شرائح eSIM', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -277,43 +317,49 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    height: 110,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131B2E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: const [
-                        Icon(Icons.history, color: Colors.white70, size: 28),
-                        SizedBox(height: 12),
-                        Text('المعاملات والشرائح', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                      ],
+                  child: GestureDetector(
+                    onTap: _playClickSound,
+                    child: Container(
+                      height: 110,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131B2E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: const [
+                          Icon(Icons.history, color: Color(0xFF34D399), size: 28),
+                          SizedBox(height: 12),
+                          Text('المعاملات والشرائح', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Container(
-                    height: 110,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF131B2E),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF00F2FE), width: 1.5),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: const [
-                        Icon(Icons.shield, color: Color(0xFF00F2FE), size: 28),
-                        SizedBox(height: 12),
-                        Text('خدمة الـ VPN', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                      ],
+                  child: GestureDetector(
+                    onTap: _playClickSound,
+                    child: Container(
+                      height: 110,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131B2E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF00F2FE), width: 1.5),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: const [
+                          Icon(Icons.shield, color: Color(0xFF00F2FE), size: 28),
+                          SizedBox(height: 12),
+                          Text('خدمة الـ VPN', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -321,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
 
-            // قسم الـ VPN السفلي
+            // قسم الـ VPN السفلي (مزود بصوت واستجابة لمسية)
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -342,15 +388,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFF00F2FE), width: 2),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.power_settings_new, color: Color(0xFF00F2FE), size: 32),
+                  GestureDetector(
+                    onTap: _playClickSound,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFF00F2FE), width: 2),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.power_settings_new, color: Color(0xFF00F2FE), size: 32),
+                      ),
                     ),
                   ),
                 ],
