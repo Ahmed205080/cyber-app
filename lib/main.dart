@@ -1,68 +1,50 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'screens/server_list_screen.dart';
+import 'screens/payment_screen.dart';
 
-class BinancePayService {
-  final String apiKey = "YOUR_API_KEY";
-  final String secretKey = "YOUR_SECRET_KEY";
-  final String baseUrl = "https://bapi.binance.com";
+void main() {
+  runApp(const CyberApp());
+}
 
-  Future<String?> createOrder({
-    required String merchantTradeNo,
-    required double totalFee,
-    required String currency,
-  }) async {
-    try {
-      final endpoint = "/binancepay/openapi/v2/order";
-      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final nonce = "123456";
+class CyberApp extends StatelessWidget {
+  const CyberApp({Key? key}) : super(key: key);
 
-      final bodyMap = {
-        "env": {"terminalType": "WEB"},
-        "merchantTradeNo": merchantTradeNo,
-        "totalFee": totalFee,
-        "currency": currency,
-        "orderExpireTime": DateTime.now().add(const Duration(minutes: 30)).millisecondsSinceEpoch,
-        "goodsDetails": [
-          {
-            "goodsType": "01",
-            "goodsCategory": "D",
-            "referenceGoodsId": "cyber_service_01",
-            "goodsName": "Cyber Digital Service",
-          }
-        ]
-      };
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Cyber App',
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
+      ),
+      home: const HomeScreen(),
+    );
+  }
+}
 
-      final payload = jsonEncode(bodyMap);
-      final stringToSign = "$timestamp\n$nonce\n$payload\n";
-      
-      final keyBytes = utf8.encode(secretKey);
-      final messageBytes = utf8.encode(stringToSign);
-      final hmac = Hmac(sha512, keyBytes);
-      final digest = hmac.convert(messageBytes);
-      final signature = digest.toString().toUpperCase();
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
-      final response = await http.post(
-        Uri.parse("$baseUrl$endpoint"),
-        headers: {
-          "Content-Type": "application/json",
-          "BinancePay-Timestamp": timestamp,
-          "BinancePay-Nonce": nonce,
-          "BinancePay-Certificate-SN": apiKey,
-          "BinancePay-Signature": signature,
-        },
-        body: payload,
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data["status"] == "SUCCESS") {
-          return data["data"]["checkoutUrl"];
-        }
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('CYBER'), centerTitle: true),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ServerListScreen())),
+              child: const Text('قائمة السيرفرات'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentScreen())),
+              child: const Text('شاشة الدفع'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
