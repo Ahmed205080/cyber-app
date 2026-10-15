@@ -30,11 +30,11 @@ jobs:
       - name: Generate Android Files
         run: flutter create . --platforms=android
 
-      - name: Build Release APK
-        run: flutter build apk --release
+      - name: Build Release App Bundle
+        run: flutter build appbundle --release
 
-      - name: Upload APK Artifacts
+      - name: Upload AAB Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Cyber-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: Cyber-AAB
+          path: build/app/outputs/bundle/release/app-release.aab
